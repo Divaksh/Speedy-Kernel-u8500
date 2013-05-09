@@ -1,0 +1,31 @@
+--- fs/btrfs/volumes.c
++++ fs/btrfs/volumes.c
+@@ -511,6 +514,8 @@
+ 		new_device->bdev = NULL;
+ 		new_device->writeable = 0;
+ 		new_device->in_fs_metadata = 0;
++		new_device->can_discard = 0;
++		spin_lock_init(&new_device->io_lock);
+ 		list_replace_rcu(&device->dev_list, &new_device->dev_list);
+ 
+ 		call_rcu(&device->rcu, free_device);
+@@ -544,12 +549,19 @@
+ 		__btrfs_close_devices(fs_devices);
+ 		free_fs_devices(fs_devices);
+ 	}
++	/*
++	 * Wait for rcu kworkers under __btrfs_close_devices
++	 * to finish all blkdev_puts so device is really
++	 * free when umount is done.
++	 */
++	rcu_barrier();
+ 	return ret;
+ }
+ 
+ static int __btrfs_open_devices(struct btrfs_fs_devices *fs_devices,
+ 				fmode_t flags, void *holder)
+ {
++	struct request_queue *q;
+ 	struct block_device *bdev;
+ 	struct list_head *head = &fs_devices->devices;
+ 	struct btrfs_device *device;

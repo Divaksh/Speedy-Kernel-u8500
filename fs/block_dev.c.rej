@@ -1,0 +1,22 @@
+--- fs/block_dev.c
++++ fs/block_dev.c
+@@ -1445,16 +1463,15 @@
+ 	if (!bdev->bd_openers) {
+ 		struct module *owner = disk->fops->owner;
+ 
+-		put_disk(disk);
+-		module_put(owner);
+ 		disk_put_part(bdev->bd_part);
+ 		bdev->bd_part = NULL;
+ 		bdev->bd_disk = NULL;
+-		bdev_inode_switch_bdi(bdev->bd_inode,
+-					&default_backing_dev_info);
+ 		if (bdev != bdev->bd_contains)
+ 			victim = bdev->bd_contains;
+ 		bdev->bd_contains = NULL;
++
++		put_disk(disk);
++		module_put(owner);
+ 	}
+ 	mutex_unlock(&bdev->bd_mutex);
+ 	bdput(bdev);

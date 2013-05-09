@@ -1,0 +1,96 @@
+--- drivers/usb/host/xhci.c
++++ drivers/usb/host/xhci.c
+@@ -1541,7 +1501,6 @@
+ 		/* FIXME: can we allocate more resources for the HC? */
+ 		break;
+ 	case COMP_BW_ERR:
+-	case COMP_2ND_BW_ERR:
+ 		dev_warn(&udev->dev, "Not enough bandwidth "
+ 				"for new device state.\n");
+ 		ret = -ENOSPC;
+@@ -1738,7 +1697,6 @@
+ 	struct completion *cmd_completion;
+ 	u32 *cmd_status;
+ 	struct xhci_virt_device *virt_dev;
+-	union xhci_trb *cmd_trb;
+ 
+ 	spin_lock_irqsave(&xhci->lock, flags);
+ 	virt_dev = xhci->devs[udev->slot_id];
+@@ -1781,7 +1739,6 @@
+ 	}
+ 	init_completion(cmd_completion);
+ 
+-	cmd_trb = xhci->cmd_ring->dequeue;
+ 	if (!ctx_change)
+ 		ret = xhci_queue_configure_endpoint(xhci, in_ctx->dma,
+ 				udev->slot_id, must_succeed);
+@@ -1803,17 +1760,14 @@
+ 	/* Wait for the configure endpoint command to complete */
+ 	timeleft = wait_for_completion_interruptible_timeout(
+ 			cmd_completion,
+-			XHCI_CMD_DEFAULT_TIMEOUT);
++			USB_CTRL_SET_TIMEOUT);
+ 	if (timeleft <= 0) {
+ 		xhci_warn(xhci, "%s while waiting for %s command\n",
+ 				timeleft == 0 ? "Timeout" : "Signal",
+ 				ctx_change == 0 ?
+ 					"configure endpoint" :
+ 					"evaluate context");
+-		/* cancel the configure endpoint command */
+-		ret = xhci_cancel_cmd(xhci, command, cmd_trb);
+-		if (ret < 0)
+-			return ret;
++		/* FIXME cancel the configure endpoint command */
+ 		return -ETIME;
+ 	}
+ 
+@@ -1870,12 +1824,6 @@
+ 	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
+ 	ctrl_ctx->add_flags &= cpu_to_le32(~EP0_FLAG);
+ 	ctrl_ctx->drop_flags &= cpu_to_le32(~(SLOT_FLAG | EP0_FLAG));
+-
+-	/* Don't issue the command if there's no endpoints to update. */
+-	if (ctrl_ctx->add_flags == cpu_to_le32(SLOT_FLAG) &&
+-			ctrl_ctx->drop_flags == 0)
+-		return 0;
+-
+ 	xhci_dbg(xhci, "New Input Control Context:\n");
+ 	slot_ctx = xhci_get_slot_ctx(xhci, virt_dev->in_ctx);
+ 	xhci_dbg_ctx(xhci, virt_dev->in_ctx,
+@@ -2162,7 +2110,8 @@
+ 		if (ret < 0)
+ 			return ret;
+ 
+-		max_streams = usb_ss_max_streams(&eps[i]->ss_ep_comp);
++		max_streams = USB_SS_MAX_STREAMS(
++				eps[i]->ss_ep_comp.bmAttributes);
+ 		if (max_streams < (*num_streams - 1)) {
+ 			xhci_dbg(xhci, "Ep 0x%x only supports %u stream IDs.\n",
+ 					eps[i]->desc.bEndpointAddress,
+@@ -2742,10 +2687,8 @@
+ 	unsigned long flags;
+ 	int timeleft;
+ 	int ret;
+-	union xhci_trb *cmd_trb;
+ 
+ 	spin_lock_irqsave(&xhci->lock, flags);
+-	cmd_trb = xhci->cmd_ring->dequeue;
+ 	ret = xhci_queue_slot_control(xhci, TRB_ENABLE_SLOT, 0);
+ 	if (ret) {
+ 		spin_unlock_irqrestore(&xhci->lock, flags);
+@@ -2757,12 +2700,12 @@
+ 
+ 	/* XXX: how much time for xHC slot assignment? */
+ 	timeleft = wait_for_completion_interruptible_timeout(&xhci->addr_dev,
+-			XHCI_CMD_DEFAULT_TIMEOUT);
++			USB_CTRL_SET_TIMEOUT);
+ 	if (timeleft <= 0) {
+ 		xhci_warn(xhci, "%s while waiting for a slot\n",
+ 				timeleft == 0 ? "Timeout" : "Signal");
+-		/* cancel the enable slot request */
+-		return xhci_cancel_cmd(xhci, NULL, cmd_trb);
++		/* FIXME cancel the enable slot request */
++		return 0;
+ 	}
+ 
+ 	if (!xhci->slot_id) {

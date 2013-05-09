@@ -1,0 +1,27 @@
+--- arch/sparc/kernel/signal_64.c
++++ arch/sparc/kernel/signal_64.c
+@@ -305,15 +285,19 @@
+ 	regs->tstate |= (tstate & (TSTATE_ASI | TSTATE_ICC | TSTATE_XCC));
+ 
+ 	err |= __get_user(fpu_save, &sf->fpu_save);
+-	if (fpu_save)
+-		err |= restore_fpu_state(regs, &sf->fpu_state);
++	if (!err && fpu_save)
++		err |= restore_fpu_state(regs, fpu_save);
+ 
+ 	err |= __copy_from_user(&set, &sf->mask, sizeof(sigset_t));
+-	err |= do_sigaltstack(&sf->stack, NULL, (unsigned long)sf);
+-
+-	if (err)
++	if (err || do_sigaltstack(&sf->stack, NULL, (unsigned long)sf) == -EFAULT)
+ 		goto segv;
+ 
++	err |= __get_user(rwin_save, &sf->rwin_save);
++	if (!err && rwin_save) {
++		if (restore_rwin_state(rwin_save))
++			goto segv;
++	}
++
+ 	regs->tpc = tpc;
+ 	regs->tnpc = tnpc;
+ 

@@ -1,0 +1,34 @@
+--- fs/ext4/ext4.h
++++ fs/ext4/ext4.h
+@@ -287,9 +286,9 @@
+  */
+ 
+ struct flex_groups {
+-	atomic64_t	free_blocks;
+-	atomic_t	free_inodes;
+-	atomic_t	used_dirs;
++	atomic_t free_inodes;
++	atomic_t free_blocks;
++	atomic_t used_dirs;
+ };
+ 
+ #define EXT4_BG_INODE_UNINIT	0x0001 /* Inode table/bitmap not in use */
+@@ -357,7 +356,8 @@
+ 
+ /* Flags that should be inherited by new inodes from their parent. */
+ #define EXT4_FL_INHERITED (EXT4_SECRM_FL | EXT4_UNRM_FL | EXT4_COMPR_FL |\
+-			   EXT4_SYNC_FL | EXT4_NODUMP_FL | EXT4_NOATIME_FL |\
++			   EXT4_SYNC_FL | EXT4_IMMUTABLE_FL | EXT4_APPEND_FL |\
++			   EXT4_NODUMP_FL | EXT4_NOATIME_FL |\
+ 			   EXT4_NOCOMPR_FL | EXT4_JOURNAL_DATA_FL |\
+ 			   EXT4_NOTAIL_FL | EXT4_DIRSYNC_FL)
+ 
+@@ -1711,7 +1710,7 @@
+ # define NORET_AND	noreturn,
+ 
+ /* bitmap.c */
+-extern unsigned int ext4_count_free(char *bitmap, unsigned numchars);
++extern unsigned int ext4_count_free(struct buffer_head *, unsigned);
+ 
+ /* balloc.c */
+ extern unsigned int ext4_block_group(struct super_block *sb,

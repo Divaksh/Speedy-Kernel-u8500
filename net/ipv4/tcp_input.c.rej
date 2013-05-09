@@ -1,0 +1,11 @@
+--- net/ipv4/tcp_input.c
++++ net/ipv4/tcp_input.c
+@@ -1123,7 +1131,7 @@
+ 		return 0;
+ 
+ 	/* ...Then it's D-SACK, and must reside below snd_una completely */
+-	if (!after(end_seq, tp->snd_una))
++	if (after(end_seq, tp->snd_una))
+ 		return 0;
+ 
+ 	if (!before(start_seq, tp->undo_marker))

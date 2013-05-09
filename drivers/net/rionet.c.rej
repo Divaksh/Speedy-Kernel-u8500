@@ -1,0 +1,25 @@
+--- drivers/net/rionet.c
++++ drivers/net/rionet.c
+@@ -80,16 +80,16 @@
+  */
+ static struct rio_dev **rionet_active;
+ 
+-#define is_rionet_capable(pef, src_ops, dst_ops)		\
+-			((pef & RIO_PEF_INB_MBOX) &&		\
+-			 (pef & RIO_PEF_INB_DOORBELL) &&	\
++#define is_rionet_capable(src_ops, dst_ops)			\
++			((src_ops & RIO_SRC_OPS_DATA_MSG) &&	\
++			 (dst_ops & RIO_DST_OPS_DATA_MSG) &&	\
+ 			 (src_ops & RIO_SRC_OPS_DOORBELL) &&	\
+ 			 (dst_ops & RIO_DST_OPS_DOORBELL))
+ #define dev_rionet_capable(dev) \
+-	is_rionet_capable(dev->pef, dev->src_ops, dev->dst_ops)
++	is_rionet_capable(dev->src_ops, dev->dst_ops)
+ 
+-#define RIONET_MAC_MATCH(x)	(*(u32 *)x == 0x00010001)
+-#define RIONET_GET_DESTID(x)	(*(u16 *)(x + 4))
++#define RIONET_MAC_MATCH(x)	(!memcmp((x), "\00\01\00\01", 4))
++#define RIONET_GET_DESTID(x)	((*((u8 *)x + 4) << 8) | *((u8 *)x + 5))
+ 
+ static int rionet_rx_clean(struct net_device *ndev)
+ {

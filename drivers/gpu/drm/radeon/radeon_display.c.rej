@@ -1,0 +1,14 @@
+--- drivers/gpu/drm/radeon/radeon_display.c
++++ drivers/gpu/drm/radeon/radeon_display.c
+@@ -1149,10 +1140,8 @@
+ 	}
+ 
+ 	radeon_fb = kzalloc(sizeof(*radeon_fb), GFP_KERNEL);
+-	if (radeon_fb == NULL) {
+-		drm_gem_object_unreference_unlocked(obj);
++	if (radeon_fb == NULL)
+ 		return ERR_PTR(-ENOMEM);
+-	}
+ 
+ 	radeon_framebuffer_init(dev, radeon_fb, mode_cmd, obj);
+ 

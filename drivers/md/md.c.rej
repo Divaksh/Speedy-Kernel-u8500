@@ -1,0 +1,30 @@
+--- drivers/md/md.c
++++ drivers/md/md.c
+@@ -1100,8 +1116,14 @@
+ 			ret = 0;
+ 	}
+ 	rdev->sectors = rdev->sb_start;
++	/* Limit to 4TB as metadata cannot record more than that.
++	 * (not needed for Linear and RAID0 as metadata doesn't
++	 * record this size)
++	 */
++	if (rdev->sectors >= (2ULL << 32) && sb->level >= 1)
++		rdev->sectors = (2ULL << 32) - 2;
+ 
+-	if (rdev->sectors < sb->size * 2 && sb->level > 1)
++	if (rdev->sectors < ((sector_t)sb->size) * 2 && sb->level >= 1)
+ 		/* "this cannot possibly happen" ... */
+ 		ret = -EINVAL;
+ 
+@@ -1377,6 +1399,11 @@
+ 	rdev->sb_start = calc_dev_sboffset(rdev);
+ 	if (!num_sectors || num_sectors > rdev->sb_start)
+ 		num_sectors = rdev->sb_start;
++	/* Limit to 4TB as metadata cannot record more than that.
++	 * 4TB == 2^32 KB, or 2*2^32 sectors.
++	 */
++	if (num_sectors >= (2ULL << 32) && rdev->mddev->level >= 1)
++		num_sectors = (2ULL << 32) - 2;
+ 	md_super_write(rdev->mddev, rdev, rdev->sb_start, rdev->sb_size,
+ 		       rdev->sb_page);
+ 	md_super_wait(rdev->mddev);

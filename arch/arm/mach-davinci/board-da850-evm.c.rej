@@ -1,0 +1,11 @@
+--- arch/arm/mach-davinci/board-da850-evm.c
++++ arch/arm/mach-davinci/board-da850-evm.c
+@@ -722,7 +696,7 @@
+ 	.num_serializer	= ARRAY_SIZE(da850_iis_serializer_direction),
+ 	.tdm_slots	= 2,
+ 	.serial_dir	= da850_iis_serializer_direction,
+-	.asp_chan_q	= EVENTQ_0,
++	.asp_chan_q	= EVENTQ_1,
+ 	.version	= MCASP_VERSION_2,
+ 	.txnumevt	= 1,
+ 	.rxnumevt	= 1,
