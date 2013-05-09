@@ -1,0 +1,10 @@
+--- drivers/net/bonding/bond_sysfs.c
++++ drivers/net/bonding/bond_sysfs.c
+@@ -1523,7 +1513,6 @@
+ 				slave->inactive = 1;
+ 		}
+ 	}
+-	read_unlock(&bond->lock);
+ out:
+ 	return ret;
+ }

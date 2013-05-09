@@ -1,0 +1,40 @@
+--- fs/nfsd/nfs4state.c
++++ fs/nfsd/nfs4state.c
+@@ -2577,9 +2570,9 @@
+ 
+ 	stp = nfs4_alloc_stateid();
+ 	if (stp == NULL)
+-		return nfserr_resource;
++		return nfserr_jukebox;
+ 
+-	status = nfs4_get_vfs_file(rqstp, fp, cur_fh, open->op_share_access);
++	status = nfs4_get_vfs_file(rqstp, fp, cur_fh, open);
+ 	if (status) {
+ 		kmem_cache_free(stateid_slab, stp);
+ 		return status;
+@@ -3377,18 +3370,16 @@
+ 	return status;
+ }
+ 
+-
+-/*
+- * unset all bits in union bitmap (bmap) that
+- * do not exist in share (from successful OPEN_DOWNGRADE)
+- */
+-static void
+-reset_union_bmap_access(unsigned long access, unsigned long *bmap)
++static inline void nfs4_file_downgrade(struct nfs4_stateid *stp, unsigned int to_access)
+ {
+ 	int i;
++
+ 	for (i = 1; i < 4; i++) {
+-		if ((i & access) != i)
+-			__clear_bit(i, bmap);
++		if (test_bit(i, &stp->st_access_bmap)
++					&& ((i & to_access) != i)) {
++			nfs4_file_put_access(stp->st_file, nfs4_access_to_omode(i));
++			__clear_bit(i, &stp->st_access_bmap);
++		}
+ 	}
+ }
+ 

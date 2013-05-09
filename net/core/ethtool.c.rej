@@ -1,0 +1,10 @@
+--- net/core/ethtool.c
++++ net/core/ethtool.c
+@@ -1964,7 +1964,6 @@
+ 	case ETHTOOL_GRXCSUM:
+ 	case ETHTOOL_GTXCSUM:
+ 	case ETHTOOL_GSG:
+-	case ETHTOOL_GSSET_INFO:
+ 	case ETHTOOL_GSTRINGS:
+ 	case ETHTOOL_GTSO:
+ 	case ETHTOOL_GPERMADDR:

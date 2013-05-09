@@ -148,6 +148,7 @@ deps_config := \
 	drivers/staging/iio/accel/Kconfig \
 	drivers/staging/iio/Kconfig \
 	drivers/staging/sep/Kconfig \
+	drivers/staging/snappy/Kconfig \
 	drivers/staging/vme/boards/Kconfig \
 	drivers/staging/vme/devices/Kconfig \
 	drivers/staging/vme/bridges/Kconfig \
@@ -386,6 +387,7 @@ deps_config := \
 	drivers/s390/char/Kconfig \
 	drivers/char/tpm/Kconfig \
 	drivers/char/pcmcia/Kconfig \
+	drivers/char/frandom/Kconfig \
 	drivers/char/hw_random/Kconfig \
 	drivers/char/ipmi/Kconfig \
 	drivers/tty/hvc/Kconfig \

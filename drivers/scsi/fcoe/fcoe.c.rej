@@ -1,0 +1,10 @@
+--- drivers/scsi/fcoe/fcoe.c
++++ drivers/scsi/fcoe/fcoe.c
+@@ -1546,7 +1531,6 @@
+ 	stats->InvalidCRCCount++;
+ 	if (stats->InvalidCRCCount < 5)
+ 		printk(KERN_WARNING "fcoe: dropping frame with CRC error\n");
+-	put_cpu();
+ 	return -EINVAL;
+ }
+ 

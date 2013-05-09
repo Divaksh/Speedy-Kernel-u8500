@@ -1,0 +1,14 @@
+--- drivers/scsi/mpt2sas/mpt2sas_base.c
++++ drivers/scsi/mpt2sas/mpt2sas_base.c
+@@ -2123,10 +2096,8 @@
+ static int
+ _base_allocate_memory_pools(struct MPT2SAS_ADAPTER *ioc,  int sleep_flag)
+ {
+-	Mpi2IOCFactsReply_t *facts;
+-	u32 queue_size, queue_diff;
++	struct mpt2sas_facts *facts;
+ 	u16 max_sge_elements;
+-	u16 num_of_reply_frames;
+ 	u16 chains_needed_per_io;
+ 	u32 sz, total_sz;
+ 	u32 retry_sz;

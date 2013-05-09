@@ -1,0 +1,29 @@
+--- drivers/net/wireless/rt2x00/rt2x00queue.c
++++ drivers/net/wireless/rt2x00/rt2x00queue.c
+@@ -556,15 +556,24 @@
+ 			       bool local)
+ {
+ 	struct ieee80211_tx_info *tx_info;
+-	struct queue_entry *entry = rt2x00queue_get_entry(queue, Q_INDEX);
++	struct queue_entry *entry;
+ 	struct txentry_desc txdesc;
+ 	struct skb_frame_desc *skbdesc;
+ 	u8 rate_idx, rate_flags;
++	int ret = 0;
++
++	/*
++	 * That function must be called with bh disabled.
++	 */
++	spin_lock(&queue->tx_lock);
++
++	entry = rt2x00queue_get_entry(queue, Q_INDEX);
+ 
+ 	if (unlikely(rt2x00queue_full(queue))) {
+ 		ERROR(queue->rt2x00dev,
+ 		      "Dropping frame due to full tx queue %d.\n", queue->qid);
+-		return -ENOBUFS;
++		ret = -ENOBUFS;
++		goto out;
+ 	}
+ 
+ 	if (unlikely(test_and_set_bit(ENTRY_OWNER_DEVICE_DATA,

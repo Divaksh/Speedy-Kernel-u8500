@@ -1,0 +1,23 @@
+--- arch/sparc/kernel/ds.c
++++ arch/sparc/kernel/ds.c
+@@ -1254,9 +1271,19 @@
+ 
+ static int __init ds_init(void)
+ {
++	unsigned long hv_ret, major, minor;
++
++	if (tlb_type == hypervisor) {
++		hv_ret = sun4v_get_version(HV_GRP_REBOOT_DATA, &major, &minor);
++		if (hv_ret == HV_EOK) {
++			pr_info("SUN4V: Reboot data supported (maj=%lu,min=%lu).\n",
++				major, minor);
++			reboot_data_supported = 1;
++		}
++	}
+ 	kthread_run(ds_thread, NULL, "kldomd");
+ 
+ 	return vio_register_driver(&ds_driver);
+ }
+ 
+-subsys_initcall(ds_init);
++fs_initcall(ds_init);
